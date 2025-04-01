@@ -168,51 +168,46 @@
             })
                 .then(response => response.json())
                 .then(data => {
-                    // Update user info
+                 
                     document.getElementById('first_name').textContent = data.data.user[0].firstName;
                     document.getElementById('last_name').textContent = data.data.user[0].lastName;
 
-                    // Update audit ratio
+                   
                     const auditRatio = data.data.user[0].auditRatio.toFixed(2);
                     document.getElementById('audits').textContent = `${auditRatio}`;
 
-                    // Calculate and update total XP
+                 
                     const xpTransaction = data.data.transaction.reduce((accu, curr) => accu + curr.amount, 0);
                     const xpFormatted = (xpTransaction * 0.001).toFixed(0);
                     document.getElementById('xp').textContent = xpFormatted;
 
-                    // Create XP progression graph
                     createXPProgressionGraph('containerId', {
                         transaction: data.data.transaction
                     });
                     function createBarChart(skills, containerId) {
                         const container = document.getElementById(containerId);
-                        container.innerHTML = ""; // Clear previous content
+                        container.innerHTML = ""; 
 
-                        const width = 400; // SVG width
-                        const height = 200; // SVG height
-                        const barWidth = 50; // Width of each bar
-                        const gap = 10; // Space between bars
+                        const width = 400; 
+                        const height = 200; 
+                        const barWidth = 50;
+                        const gap = 10; 
 
                         let maxAmount = Math.max(...skills.map(skill => skill.amount)); // Get max value
 
-                        // Create SVG element
                         let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
                         svg.setAttribute("width", width);
                         svg.setAttribute("height", height);
 
                         skills.forEach((skill, index) => {
-                            let barHeight = (skill.amount / maxAmount) * (height - 20); // Scale height
+                            let barHeight = (skill.amount / maxAmount) * (height - 20); 
 
-                            // Create bar (rectangle)
                             let rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
                             rect.setAttribute("x", index * (barWidth + gap));
                             rect.setAttribute("y", height - barHeight);
                             rect.setAttribute("width", barWidth);
                             rect.setAttribute("height", barHeight);
-                            rect.setAttribute("fill", "#888"); // Bar color
-
-                            // Create text label for amount
+                            rect.setAttribute("fill", "#888"); 
                             let amountText = document.createElementNS("http://www.w3.org/2000/svg", "text");
                             amountText.setAttribute("x", index * (barWidth + gap) + barWidth / 2);
                             amountText.setAttribute("y", height - barHeight - 5);
@@ -220,7 +215,6 @@
                             amountText.setAttribute("fill", "#fff");
                             amountText.textContent = skill.amount;
 
-                            // Create text label for skill type
                             let typeText = document.createElementNS("http://www.w3.org/2000/svg", "text");
                             typeText.setAttribute("x", index * (barWidth + gap) + barWidth / 2);
                             typeText.setAttribute("y", height + 15);
@@ -231,21 +225,20 @@
                             
                            
 
-                            // Append elements to SVG
                             svg.appendChild(rect);
                             svg.appendChild(amountText);
                             svg.appendChild(typeText);
                         });
 
-                        // Append SVG to container
+                       
                         container.innerHTML = "<h1> Skills </h1>"
                         container.appendChild(svg);
                     }
 
-                    // skills*****************
+                    
                     let skills
                     skills = data.data.user[0].transactions.sort((a, b) => b.amount - a.amount).slice(0, 6)
-                    // console.log(skills[0].type);
+                  
                     
                     createBarChart(skills, "section4");
 
@@ -257,7 +250,7 @@
                 });
         }
 
-        // Your existing createXPProgressionGraph function remains the same
+        
         function createXPProgressionGraph(containerId, data) {
             const container = document.getElementById(containerId);
             const margin = { top: 50, right: 60, bottom: 40, left: 60 };
@@ -351,42 +344,38 @@
             }
 
             function render() {
-                // Clear container
+               
                 container.innerHTML = '';
 
-                // Get dimensions
+              
                 const width = container.getBoundingClientRect().width;
                 const height = container.getBoundingClientRect().height || 200;
 
-                // Create SVG
+                
                 const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
                 svg.setAttribute("width", "100%");
                 svg.setAttribute("height", "100%");
                 svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
                 svg.style.backgroundColor = "#1a1a1a";
-                // let title = document.createElement('h2')
-                // title.textContent = "XP Prog"
-                // title.className = "progxp"
-                // container.appendChild(title)
+               
                 container.appendChild(svg);
 
-                // Process data
+              
                 const processedData = processData(data);
                 const { xScale, yScale } = createScales(processedData, width, height);
 
-                // Create tooltip if it doesn't exist
                 if (!tooltip) {
                     tooltip = createTooltip();
                 }
 
-                // Create line path
+               
                 const pathData = processedData.map((point, index) => {
                     const x = xScale(point.date);
                     const y = yScale(point.totalXP);
                     return `${index === 0 ? 'M' : 'L'} ${x} ${y}`;
                 }).join(' ');
 
-                // Add line
+                
                 const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
                 path.setAttribute("d", pathData);
                 path.setAttribute("stroke", "#808080");
@@ -394,7 +383,7 @@
                 path.setAttribute("fill", "none");
                 svg.appendChild(path);
 
-                // Add points
+             
                 processedData.forEach(point => {
                     const x = xScale(point.date);
                     const y = yScale(point.totalXP);
@@ -402,10 +391,9 @@
                 });
             }
 
-            // Initial render
             render();
 
-            // Return function to handle updates
+           
             return {
                 update: (newData) => {
                     data = newData;
@@ -413,9 +401,9 @@
                 }
             };
         }
-        console.log('*****');
+        
         intrastatus();
-        console.log('*****');
+        
     
     </script>
 </body>

@@ -17,7 +17,7 @@
         <button onclick="login()">Login</button>
     </div>
     </div>
-    </div>
+</div>
     <style>
     /* -------------------- Body Background -------------------- */
 body {
@@ -142,11 +142,10 @@ body {
                         return
                     }
                     localStorage.setItem("jwt", data);
-                    //handel error of psword inccorect. 
-                    //intrastatus();  
+                     
 
                     window.location.href = "index.html"
-                    //
+             
                     
                     
                 })
@@ -156,23 +155,21 @@ body {
                 });
         }
         document.addEventListener("DOMContentLoaded", function() {
-            // Selecting the input fields for the keydown event
             if (localStorage.getItem("jwt")){
                  window.location.href = "index.html"
             } 
             const usernameField = document.getElementById("username");
             const passwordField = document.getElementById("password");
-            // Listen for the "Enter" key press in the inputs
             usernameField.addEventListener("keydown", handleEnterKey);
             passwordField.addEventListener("keydown", handleEnterKey);
             function handleEnterKey(event) {
                 if (event.key === "Enter") {
-                    event.preventDefault();  // Prevent form submission on Enter
-                    login();  // Call the login function when Enter is pressed
+                    event.preventDefault();  
+                    login();  
                 }
             }
         });
 
     </script>
 </body>
-</html>*/
+</html>
