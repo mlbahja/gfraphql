@@ -33,23 +33,34 @@
             min-height: 200px;
         }
 
-        input,
-        button {
-            margin: 5px;
-            padding: 8px;
-            border-radius: 4px;
-        }
+        .input-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    max-width: 400px;
+}
 
-        button {
-            background-color: #333;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
+input {
+    width: 100%;
+    padding: 8px;
+    padding-right: 80px; /* Space for the button */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
 
-        button:hover {
-            background-color: #444;
-        }
+button {
+    position: absolute;
+    right: 25px;
+    transform: translateY(-50%);
+    padding: 8px;
+    border-radius: 4px;
+    background-color: #333;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+
 
         #containerId {
             width: 100%;
