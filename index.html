@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+
+        body {
+            background-color: #fcc500;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .modal-content {
+            margin-bottom: 20px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-gap: 20px;
+            margin-top: 20px;
+        }
+
+        .section {
+            background-color: #282e2d;
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 200px;
+        }
+
+        input,
+        button {
+            margin: 5px;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #444;
+        }
+
+        #containerId {
+            width: 100%;
+            height: 200px;
+        }
+
+        .header-info {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            color: #282e2d;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- <div class="modal-content">
+        <h2>Login</h2>
+        <div>
+            <input id="username" type="text" placeholder="Username" required>
+            <input id="password" type="password" placeholder="Password" required>
+            <button onclick="login()">Login</button>
+        </div>
+    </div> -->
+
+    <div class="header-info">
+        <h1>   Welcome : </h1>
+        <h1 id="first_name"></h1>
+        <h1 id="last_name"></h1>
+
+        <button onclick="Logout()">  Logout  </button>
+        
+    </div>
+
+    <div class="dashboard" id="dashboard">
+        <div class="section" id="section1">
+            <h1>Audit Ratio</h1>
+            <h2 id="audits"></h2>
+        </div>
+        <div class="section" id="section2">
+            <h1>Progresse</h1>
+            <div id="containerId"></div>
+        </div>
+        <div class="section" id="section3">
+            <div id="xp_time_project">
+                <h2>Total XP</h2>
+                <h1 id="xp"></h1>
+            </div>
+        </div>
+       
+        <div
+         class="section" id="section4">
+            
+            <div id="skills"></div>
+        </div>
+    </div>
+
+    <script>
+        function Logout(){
+            localStorage.removeItem('jwt')
+            window.location.href = "login.html"
+            
+            
+          
+        }
+        
+        function intrastatus() {
+            const afterGet = localStorage.getItem('jwt');
+            console.log(afterGet);
+            
+            if (!afterGet) {
+                window.location.href = "login.html"
+                console.log("**********");
+            }
+            fetch("https://learn.zone01oujda.ma/api/graphql-engine/v1/graphql", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${afterGet}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    query: `{
+                        user {
+                            firstName
+                            lastName
+                            auditRatio
+                            transactions(
+                                where: { type: { _like: "skill_%" } }
+                                order_by: { amount: desc }
+                            ) {
+                                id
+                                type
+                                amount
+                            }
+                        }
+                        transaction(
+                            where: {
+                                _and: [
+                                    { type: { _eq: "xp" } }
+                                    { eventId: { _eq: 41 } }
+                                ]
+                            }
+                        ) {
+                            type
+                            amount
+                            path
+                            createdAt
+                            eventId
+                            object {
+                                type
+                                name
+                            }
+                        }
+                    }`
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Update user info
+                    document.getElementById('first_name').textContent = data.data.user[0].firstName;
+                    document.getElementById('last_name').textContent = data.data.user[0].lastName;
+
+                    // Update audit ratio
+                    const auditRatio = data.data.user[0].auditRatio.toFixed(2);
+                    document.getElementById('audits').textContent = `${auditRatio}`;
+
+                    // Calculate and update total XP
+                    const xpTransaction = data.data.transaction.reduce((accu, curr) => accu + curr.amount, 0);
+                    const xpFormatted = (xpTransaction * 0.001).toFixed(0);
+                    document.getElementById('xp').textContent = xpFormatted;
+
+                    // Create XP progression graph
+                    createXPProgressionGraph('containerId', {
+                        transaction: data.data.transaction
+                    });
+                    function createBarChart(skills, containerId) {
+                        const container = document.getElementById(containerId);
+                        container.innerHTML = ""; // Clear previous content
+
+                        const width = 400; // SVG width
+                        const height = 200; // SVG height
+                        const barWidth = 50; // Width of each bar
+                        const gap = 10; // Space between bars
+
+                        let maxAmount = Math.max(...skills.map(skill => skill.amount)); // Get max value
+
+                        // Create SVG element
+                        let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                        svg.setAttribute("width", width);
+                        svg.setAttribute("height", height);
+
+                        skills.forEach((skill, index) => {
+                            let barHeight = (skill.amount / maxAmount) * (height - 20); // Scale height
+
+                            // Create bar (rectangle)
+                            let rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                            rect.setAttribute("x", index * (barWidth + gap));
+                            rect.setAttribute("y", height - barHeight);
+                            rect.setAttribute("width", barWidth);
+                            rect.setAttribute("height", barHeight);
+                            rect.setAttribute("fill", "#888"); // Bar color
+
+                            // Create text label for amount
+                            let amountText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                            amountText.setAttribute("x", index * (barWidth + gap) + barWidth / 2);
+                            amountText.setAttribute("y", height - barHeight - 5);
+                            amountText.setAttribute("text-anchor", "middle");
+                            amountText.setAttribute("fill", "#fff");
+                            amountText.textContent = skill.amount;
+
+                            // Create text label for skill type
+                            let typeText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                            typeText.setAttribute("x", index * (barWidth + gap) + barWidth / 2);
+                            typeText.setAttribute("y", height + 15);
+                            typeText.setAttribute("text-anchor", "middle");
+                            typeText.setAttribute("fill", "#fff");
+                            typeText.setAttribute("font-size", "10");
+                            typeText.textContent = skill.type;
+                            
+                           
+
+                            // Append elements to SVG
+                            svg.appendChild(rect);
+                            svg.appendChild(amountText);
+                            svg.appendChild(typeText);
+                        });
+
+                        // Append SVG to container
+                        container.innerHTML = "<h1> Skills </h1>"
+                        container.appendChild(svg);
+                    }
+
+                    // skills*****************
+                    let skills
+                    skills = data.data.user[0].transactions.sort((a, b) => b.amount - a.amount).slice(0, 6)
+                    // console.log(skills[0].type);
+                    
+                    createBarChart(skills, "section4");
+
+                    
+                })
+
+                .catch(error => {
+                    console.error("Error:", error);
+                });
+        }
+
+        // Your existing createXPProgressionGraph function remains the same
+        function createXPProgressionGraph(containerId, data) {
+            const container = document.getElementById(containerId);
+            const margin = { top: 50, right: 60, bottom: 40, left: 60 };
+            let tooltip = null;
+
+            function processData(data) {
+                let cumulativeXP = 0;
+                return data.transaction.map(tx => {
+                    cumulativeXP += tx.amount;
+                    return {
+                        amount: tx.amount,
+                        totalXP: cumulativeXP,
+                        project: tx.object.name,
+                        date: new Date(tx.createdAt)
+                    };
+                });
+            }
+
+            function createScales(processedData, width, height) {
+                const dateRange = [
+                    processedData[0].date,
+                    processedData[processedData.length - 1].date
+                ];
+
+                const xpRange = [0, processedData[processedData.length - 1].totalXP];
+
+                return {
+                    xScale: (x) => {
+                        const range = dateRange[1] - dateRange[0];
+                        return ((x - dateRange[0]) / range) *
+                            (width - margin.left - margin.right) +
+                            margin.left;
+                    },
+                    yScale: (y) => {
+                        return height -
+                            (y / xpRange[1]) *
+                            (height - margin.top - margin.bottom) -
+                            margin.bottom;
+                    }
+                };
+            }
+
+            function createTooltip() {
+                const tooltip = document.createElement('div');
+                tooltip.style.cssText = `   
+            position: absolute;
+            display: none;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            pointer-events: none;
+            z-index: 1000;
+        `;
+                document.body.appendChild(tooltip);
+                return tooltip;
+            }
+
+            function createPoint(svg, x, y, pointData, tooltip) {
+                const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+
+                circle.setAttribute("cx", x);
+                circle.setAttribute("cy", y);
+                circle.setAttribute("r", "4");
+                circle.setAttribute("fill", "#808080");
+
+                circle.addEventListener('mouseover', (e) => {
+                    circle.setAttribute("r", "6");
+                    circle.setAttribute("fill", "#ffffff");
+
+                    tooltip.style.display = 'block';
+                    tooltip.innerHTML = `
+                Project: ${pointData.project}<br>
+                XP: ${pointData.totalXP.toLocaleString()}<br>
+                Date: ${pointData.date.toLocaleDateString()}
+            `;
+
+                    const rect = circle.getBoundingClientRect();
+                    tooltip.style.left = `${rect.left + window.scrollX}px`;
+                    tooltip.style.top = `${rect.top + window.scrollY - 70}px`;
+                });
+
+                circle.addEventListener('mouseout', () => {
+                    circle.setAttribute("r", "4");
+                    circle.setAttribute("fill", "#808080");
+                    tooltip.style.display = 'none';
+                });
+
+                svg.appendChild(circle);
+            }
+
+            function render() {
+                // Clear container
+                container.innerHTML = '';
+
+                // Get dimensions
+                const width = container.getBoundingClientRect().width;
+                const height = container.getBoundingClientRect().height || 200;
+
+                // Create SVG
+                const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                svg.setAttribute("width", "100%");
+                svg.setAttribute("height", "100%");
+                svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+                svg.style.backgroundColor = "#1a1a1a";
+                // let title = document.createElement('h2')
+                // title.textContent = "XP Prog"
+                // title.className = "progxp"
+                // container.appendChild(title)
+                container.appendChild(svg);
+
+                // Process data
+                const processedData = processData(data);
+                const { xScale, yScale } = createScales(processedData, width, height);
+
+                // Create tooltip if it doesn't exist
+                if (!tooltip) {
+                    tooltip = createTooltip();
+                }
+
+                // Create line path
+                const pathData = processedData.map((point, index) => {
+                    const x = xScale(point.date);
+                    const y = yScale(point.totalXP);
+                    return `${index === 0 ? 'M' : 'L'} ${x} ${y}`;
+                }).join(' ');
+
+                // Add line
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path.setAttribute("d", pathData);
+                path.setAttribute("stroke", "#808080");
+                path.setAttribute("stroke-width", "2");
+                path.setAttribute("fill", "none");
+                svg.appendChild(path);
+
+                // Add points
+                processedData.forEach(point => {
+                    const x = xScale(point.date);
+                    const y = yScale(point.totalXP);
+                    createPoint(svg, x, y, point, tooltip);
+                });
+            }
+
+            // Initial render
+            render();
+
+            // Return function to handle updates
+            return {
+                update: (newData) => {
+                    data = newData;
+                    render();
+                }
+            };
+        }
+        console.log('*****');
+        intrastatus();
+        console.log('*****');
+    
+    </script>
+</body>
+
+</html>

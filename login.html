@@ -1,0 +1,178 @@
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="modal" id="loginModal"></div>
+    <div class="modal-content">
+        <h2>Login</h2>
+    <div class="form">
+        <input id="username" type="text" placeholder="Username" required>
+        <input id="password" type="password" placeholder="Password" required>
+        <button onclick="login()">Login</button>
+    </div>
+    </div>
+    </div>
+    <style>
+    /* -------------------- Body Background -------------------- */
+body {
+    background: linear-gradient(135deg, #4caf50, #b5f132); /* Green gradient background */
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full height to center everything */
+    margin: 0; /* Remove default margin */
+}
+
+/* -------------------- Modal Background -------------------- */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure the modal is above other content */
+}
+
+/* -------------------- Modal Content -------------------- */
+.modal-content {
+    background: white;
+    padding: 30px;
+    width: 300px;
+    border-radius: 8px; /* Rounded corners */
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Soft shadow for better appearance */
+}
+
+/* -------------------- Heading -------------------- */
+.modal-content h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333; /* Dark text color for contrast */
+}
+
+/* -------------------- Form Inputs -------------------- */
+.modal-content div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.modal-content div input {
+    margin: 10px 0;
+    padding: 12px;
+    width: 100%; /* Full width of the form */
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.modal-content div input:focus {
+    border-color: #007bff; /* Blue border when focused */
+    outline: none;
+}
+
+/* -------------------- Submit Button -------------------- */
+.modal-content div button {
+    padding: 12px;
+    background-color: #333; /* Dark button */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+    width: 100%;
+}
+
+.modal-content div button:hover {
+    background-color: #f0a500; /* Gold button on hover */
+}
+
+/* -------------------- Close Button -------------------- */
+.close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    color: #333;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #f0a500; /* Gold color on hover */
+}
+
+
+    </style>
+    <script>
+        function login(){
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            if (!username || !password){
+                alert("Plase enter username/email and ");
+                return;
+            }
+            const credentials = btoa(`${username}:${password}`);
+            console.log(credentials,'**********');
+            fetch("https://learn.zone01oujda.ma/api/auth/signin", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Basic ${credentials}`,
+                    "Content-Type": "application/json"
+                }   
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    
+                    if (data.error){
+                        alert(data.error)
+                        return
+                    }
+                    localStorage.setItem("jwt", data);
+                    //handel error of psword inccorect. 
+                    //intrastatus();  
+
+                    window.location.href = "index.html"
+                    //
+                    
+                    
+                })
+                
+                .catch(error => {
+                    console.error("Error:", error);
+                });
+        }
+        document.addEventListener("DOMContentLoaded", function() {
+            // Selecting the input fields for the keydown event
+            if (localStorage.getItem("jwt")){
+                 window.location.href = "index.html"
+            } 
+            const usernameField = document.getElementById("username");
+            const passwordField = document.getElementById("password");
+            // Listen for the "Enter" key press in the inputs
+            usernameField.addEventListener("keydown", handleEnterKey);
+            passwordField.addEventListener("keydown", handleEnterKey);
+            function handleEnterKey(event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();  // Prevent form submission on Enter
+                    login();  // Call the login function when Enter is pressed
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>*/
